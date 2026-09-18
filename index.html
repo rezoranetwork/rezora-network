@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,6 +56,7 @@
             font-size: 24px;
             font-weight: bold;
             letter-spacing: 2px;
+            word-break: break-word;
         }
 
         .button {
@@ -64,9 +65,24 @@
             background: white;
             color: #0B1020;
             text-decoration: none;
+            border: none;
             border-radius: 10px;
             font-weight: bold;
-            margin-top: 10px;
+            margin: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .button.secondary {
+            background: #25304D;
+            color: white;
+        }
+
+        .status {
+            margin-top: 15px;
+            color: #8EA2C8;
+            font-size: 14px;
+            min-height: 20px;
         }
 
         .footer {
@@ -91,21 +107,31 @@
 
         <div class="card">
 
-            <h1>Gabung Rezora Network</h1>
+            <h1>Join Rezora Network</h1>
 
             <p>
-                Mulai perjalananmu bersama Rezora Network.
-                Gunakan kode referral di bawah untuk bergabung.
+                Start your journey with Rezora Network.
+                Use the referral code below to join.
             </p>
 
-            <div class="code">
+            <div class="code" id="referralCode">
                 CF0F8FC2
             </div>
 
+            <button class="button" onclick="copyReferral()">
+                Copy Referral Code
+            </button>
+
+            <button class="button secondary" onclick="shareReferral()">
+                Share
+            </button>
+
             <p>
-                Buka aplikasi Rezora Network dan masukkan
-                kode referral tersebut pada bagian Referral.
+                Open the Rezora Network app and enter
+                this referral code in the Referral section.
             </p>
+
+            <div class="status" id="status"></div>
 
         </div>
 
@@ -114,6 +140,59 @@
         </div>
 
     </div>
+
+    <script>
+        const defaultReferralCode = "CF0F8FC2";
+
+        function getReferralCode() {
+            const params = new URLSearchParams(window.location.search);
+            const ref = params.get("ref");
+
+            if (ref && /^[A-Za-z0-9]{4,20}$/.test(ref)) {
+                return ref.toUpperCase();
+            }
+
+            return defaultReferralCode;
+        }
+
+        const referralCode = getReferralCode();
+
+        document.getElementById("referralCode").textContent = referralCode;
+
+        function copyReferral() {
+            navigator.clipboard.writeText(referralCode)
+                .then(function() {
+                    document.getElementById("status").textContent =
+                        "Referral code copied!";
+                })
+                .catch(function() {
+                    document.getElementById("status").textContent =
+                        "Please copy the referral code manually.";
+                });
+        }
+
+        function shareReferral() {
+            const shareUrl =
+                window.location.origin +
+                window.location.pathname +
+                "?ref=" +
+                encodeURIComponent(referralCode);
+
+            if (navigator.share) {
+                navigator.share({
+                    title: "Join Rezora Network",
+                    text: "Join Rezora Network using my referral code: " + referralCode,
+                    url: shareUrl
+                });
+            } else {
+                navigator.clipboard.writeText(shareUrl)
+                    .then(function() {
+                        document.getElementById("status").textContent =
+                            "Referral link copied!";
+                    });
+            }
+        }
+    </script>
 
 </body>
 </html>
