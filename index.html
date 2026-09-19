@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rezora Network</title>
+
+    <title>Join Rezora Network</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
@@ -78,6 +83,14 @@
             color: white;
         }
 
+        .button.open-app {
+            background: #ffffff;
+            color: #0B1020;
+            width: calc(100% - 12px);
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
         .status {
             margin-top: 15px;
             color: #8EA2C8;
@@ -89,6 +102,12 @@
             margin-top: 40px;
             color: #68789D;
             font-size: 13px;
+        }
+
+        .small {
+            font-size: 13px;
+            color: #68789D;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -111,12 +130,16 @@
 
             <p>
                 Start your journey with Rezora Network.
-                Use the referral code below to join.
+                Your referral code has been prepared automatically.
             </p>
 
             <div class="code" id="referralCode">
                 CF0F8FC2
             </div>
+
+            <button class="button open-app" onclick="openRezoraApp()">
+                Open Rezora Network
+            </button>
 
             <button class="button" onclick="copyReferral()">
                 Copy Referral Code
@@ -127,11 +150,16 @@
             </button>
 
             <p>
-                Open the Rezora Network app and enter
-                this referral code in the Referral section.
+                Tap "Open Rezora Network" to continue directly
+                to registration.
             </p>
 
             <div class="status" id="status"></div>
+
+            <div class="small">
+                If the app does not open automatically,
+                make sure Rezora Network is installed.
+            </div>
 
         </div>
 
@@ -141,57 +169,217 @@
 
     </div>
 
+
     <script>
+
+        /*
+         * DEFAULT REFERRAL CODE
+         *
+         * This code is used when the page is opened
+         * without a valid ?ref= parameter.
+         */
         const defaultReferralCode = "CF0F8FC2";
 
+
+        /*
+         * GET REFERRAL CODE FROM URL
+         *
+         * Example:
+         *
+         * https://rezoranetwork.github.io/rezora-network/?ref=CF0F8FC2
+         */
         function getReferralCode() {
-            const params = new URLSearchParams(window.location.search);
+
+            const params = new URLSearchParams(
+                window.location.search
+            );
+
             const ref = params.get("ref");
 
-            if (ref && /^[A-Za-z0-9]{4,20}$/.test(ref)) {
+            if (
+                ref &&
+                /^[A-Za-z0-9]{4,20}$/.test(ref)
+            ) {
                 return ref.toUpperCase();
             }
 
             return defaultReferralCode;
         }
 
+
+        /*
+         * CURRENT REFERRAL CODE
+         */
         const referralCode = getReferralCode();
 
-        document.getElementById("referralCode").textContent = referralCode;
 
-        function copyReferral() {
-            navigator.clipboard.writeText(referralCode)
-                .then(function() {
-                    document.getElementById("status").textContent =
-                        "Referral code copied!";
-                })
-                .catch(function() {
-                    document.getElementById("status").textContent =
-                        "Please copy the referral code manually.";
-                });
+        /*
+         * SHOW REFERRAL CODE
+         */
+        document.getElementById("referralCode").textContent =
+            referralCode;
+
+
+        /*
+         * OPEN REZORA NETWORK APP
+         *
+         * This sends the referral code to:
+         *
+         * rezora://ref/REFERRAL_CODE
+         *
+         * MainActivity.kt receives this link and
+         * sends the code to RegisterActivity.
+         */
+        function openRezoraApp() {
+
+            const appLink =
+                "rezora://ref/" +
+                encodeURIComponent(referralCode);
+
+            document.getElementById("status").textContent =
+                "Opening Rezora Network...";
+
+            /*
+             * Try to open the Android application.
+             */
+            window.location.href = appLink;
+
+
+            /*
+             * If the application is not installed,
+             * the browser remains on this page.
+             */
+            setTimeout(function() {
+
+                document.getElementById("status").textContent =
+                    "If Rezora Network did not open, please make sure the app is installed.";
+
+            }, 1800);
         }
 
+
+        /*
+         * COPY REFERRAL CODE
+         */
+        function copyReferral() {
+
+            if (
+                navigator.clipboard &&
+                navigator.clipboard.writeText
+            ) {
+
+                navigator.clipboard.writeText(referralCode)
+                    .then(function() {
+
+                        document.getElementById("status").textContent =
+                            "Referral code copied!";
+
+                    })
+                    .catch(function() {
+
+                        document.getElementById("status").textContent =
+                            "Please copy the referral code manually.";
+
+                    });
+
+            } else {
+
+                document.getElementById("status").textContent =
+                    "Please copy the referral code manually.";
+            }
+        }
+
+
+        /*
+         * SHARE REFERRAL LINK
+         */
         function shareReferral() {
+
             const shareUrl =
                 window.location.origin +
                 window.location.pathname +
                 "?ref=" +
                 encodeURIComponent(referralCode);
 
+
+            /*
+             * Android / modern browser
+             */
             if (navigator.share) {
+
                 navigator.share({
+
                     title: "Join Rezora Network",
-                    text: "Join Rezora Network using my referral code: " + referralCode,
+
+                    text:
+                        "Join Rezora Network using my referral code: " +
+                        referralCode,
+
                     url: shareUrl
+
+                }).catch(function() {
+
+                    /*
+                     * User cancelled sharing.
+                     * Nothing needs to happen.
+                     */
+
                 });
-            } else {
+
+                return;
+            }
+
+
+            /*
+             * Browser without Web Share API
+             */
+            if (
+                navigator.clipboard &&
+                navigator.clipboard.writeText
+            ) {
+
                 navigator.clipboard.writeText(shareUrl)
                     .then(function() {
+
                         document.getElementById("status").textContent =
                             "Referral link copied!";
+
+                    })
+                    .catch(function() {
+
+                        document.getElementById("status").textContent =
+                            "Please copy the referral link manually.";
+
                     });
+
+            } else {
+
+                document.getElementById("status").textContent =
+                    "Please copy the referral link manually.";
             }
         }
+
+
+        /*
+         * AUTO OPEN APP
+         *
+         * When somebody opens a referral link,
+         * the page automatically tries to open
+         * the Rezora Network application.
+         *
+         * The delay gives the page a moment to
+         * read the referral code first.
+         */
+        window.addEventListener("load", function() {
+
+            setTimeout(function() {
+
+                openRezoraApp();
+
+            }, 500);
+
+        });
+
     </script>
 
 </body>
